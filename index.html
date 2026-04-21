@@ -39,6 +39,89 @@
       margin-bottom: 30px;
     }
 
+    /* --- 難易度選択画面 --- */
+    #difficulty-screen { display: block; }
+    #game-screen { display: none; }
+
+    .difficulty-label {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .difficulty-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .diff-btn {
+      width: 100%;
+      padding: 18px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .diff-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .diff-btn .diff-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .diff-btn .diff-info { flex: 1; }
+    .diff-btn .diff-name { font-size: 1rem; font-weight: bold; }
+    .diff-btn .diff-range {
+      font-size: 0.8rem;
+      font-weight: normal;
+      margin-top: 2px;
+    }
+
+    .diff-btn.lv1 { border-color: rgba(74, 222, 128, 0.3); }
+    .diff-btn.lv1:hover { border-color: rgba(74, 222, 128, 0.6); background: rgba(74, 222, 128, 0.08); }
+    .diff-btn.lv1 .diff-range { color: #4ade80; }
+
+    .diff-btn.lv2 { border-color: rgba(251, 191, 36, 0.3); }
+    .diff-btn.lv2:hover { border-color: rgba(251, 191, 36, 0.6); background: rgba(251, 191, 36, 0.08); }
+    .diff-btn.lv2 .diff-range { color: #fbbf24; }
+
+    .diff-btn.lv3 { border-color: rgba(248, 113, 113, 0.3); }
+    .diff-btn.lv3:hover { border-color: rgba(248, 113, 113, 0.6); background: rgba(248, 113, 113, 0.08); }
+    .diff-btn.lv3 .diff-range { color: #f87171; }
+
+    /* 選択中の難易度バッジ */
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+    }
+    .level-badge.lv1 { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .level-badge.lv2 { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .level-badge.lv3 { background: rgba(248, 113, 113, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+
+    /* --- ゲーム画面 --- */
     .hint-box {
       height: 60px;
       display: flex;
@@ -91,10 +174,7 @@
       transition: border-color 0.2s;
     }
 
-    input[type="number"]:focus {
-      border-color: rgba(99, 102, 241, 0.7);
-    }
-
+    input[type="number"]:focus { border-color: rgba(99, 102, 241, 0.7); }
     input[type="number"]::placeholder { color: #64748b; }
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
@@ -120,10 +200,7 @@
       box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
     }
 
-    #guess-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    #guess-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     #reset-btn {
       width: 100%;
@@ -133,10 +210,7 @@
       margin-top: 4px;
     }
 
-    #reset-btn:hover {
-      background: rgba(255, 255, 255, 0.14);
-      color: #e2e8f0;
-    }
+    #reset-btn:hover { background: rgba(255, 255, 255, 0.14); color: #e2e8f0; }
 
     .stats {
       display: flex;
@@ -169,48 +243,107 @@
   </style>
 </head>
 <body>
+  <canvas id="fireworks" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100;"></canvas>
   <div class="card">
     <h1>🎯 数当てゲーム</h1>
-    <p class="subtitle">1〜100 の数字を当ててみよう！</p>
+    <p class="subtitle">数字を当ててみよう！</p>
 
-    <div class="hint-box">
-      <div class="hint" id="hint"></div>
+    <!-- 難易度選択画面 -->
+    <div id="difficulty-screen">
+      <p class="difficulty-label">難易度を選んでください</p>
+      <div class="difficulty-list">
+        <button class="diff-btn lv1" data-level="1">
+          <span class="diff-icon">🟢</span>
+          <span class="diff-info">
+            <span class="diff-name">レベル 1　かんたん</span>
+            <span class="diff-range">1 〜 100</span>
+          </span>
+        </button>
+        <button class="diff-btn lv2" data-level="2">
+          <span class="diff-icon">🟡</span>
+          <span class="diff-info">
+            <span class="diff-name">レベル 2　ふつう</span>
+            <span class="diff-range">1 〜 500</span>
+          </span>
+        </button>
+        <button class="diff-btn lv3" data-level="3">
+          <span class="diff-icon">🔴</span>
+          <span class="diff-info">
+            <span class="diff-name">レベル 3　むずかしい</span>
+            <span class="diff-range">1 〜 1000</span>
+          </span>
+        </button>
+      </div>
     </div>
 
-    <div class="input-row">
-      <input type="number" id="guess-input" min="1" max="100" placeholder="1〜100">
-      <button id="guess-btn">決定</button>
+    <!-- ゲーム画面 -->
+    <div id="game-screen">
+      <div id="level-badge" class="level-badge"></div>
+
+      <div class="hint-box">
+        <div class="hint" id="hint"></div>
+      </div>
+
+      <div class="input-row">
+        <input type="number" id="guess-input" min="1" placeholder="数字を入力">
+        <button id="guess-btn">決定</button>
+      </div>
+
+      <button id="reset-btn">🔄 難易度を変える</button>
+
+      <div class="stats">
+        <div class="stat-item">試行回数<span class="stat-value" id="tries">0</span></div>
+        <div class="stat-item">絞り込み範囲<span class="stat-value" id="range">-</span></div>
+      </div>
+
+      <div class="history" id="history"></div>
     </div>
-
-    <button id="reset-btn">🔄 リセット</button>
-
-    <div class="stats">
-      <div class="stat-item">試行回数<span class="stat-value" id="tries">0</span></div>
-      <div class="stat-item">範囲<span class="stat-value" id="range">1〜100</span></div>
-    </div>
-
-    <div class="history" id="history"></div>
   </div>
 
   <script>
-    let answer, tries, low, high, guessed;
+    const LEVELS = {
+      1: { max: 100,  icon: '🟢', name: 'レベル1', cls: 'lv1' },
+      2: { max: 500,  icon: '🟡', name: 'レベル2', cls: 'lv2' },
+      3: { max: 1000, icon: '🔴', name: 'レベル3', cls: 'lv3' },
+    };
 
-    function init() {
-      answer = Math.floor(Math.random() * 100) + 1;
+    let answer, tries, low, high, guessed, maxVal;
+
+    function showDifficultyScreen() {
+      document.getElementById('difficulty-screen').style.display = 'block';
+      document.getElementById('game-screen').style.display = 'none';
+    }
+
+    function startGame(level) {
+      const cfg = LEVELS[level];
+      maxVal = cfg.max;
+      answer = Math.floor(Math.random() * maxVal) + 1;
       tries = 0;
       low = 1;
-      high = 100;
+      high = maxVal;
       guessed = false;
 
+      const badge = document.getElementById('level-badge');
+      badge.className = `level-badge ${cfg.cls}`;
+      badge.textContent = `${cfg.icon} ${cfg.name}　1〜${maxVal}`;
+
+      const input = document.getElementById('guess-input');
+      input.max = maxVal;
+      input.placeholder = `1〜${maxVal}`;
+      input.value = '';
+      input.disabled = false;
+
+      document.getElementById('guess-btn').disabled = false;
       document.getElementById('hint').style.display = 'none';
       document.getElementById('hint').className = 'hint';
-      document.getElementById('guess-input').value = '';
-      document.getElementById('guess-input').disabled = false;
-      document.getElementById('guess-btn').disabled = false;
       document.getElementById('tries').textContent = '0';
-      document.getElementById('range').textContent = '1〜100';
+      document.getElementById('range').textContent = `1〜${maxVal}`;
       document.getElementById('history').innerHTML = '';
-      document.getElementById('guess-input').focus();
+
+      document.getElementById('difficulty-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'block';
+
+      input.focus();
     }
 
     function guess() {
@@ -219,8 +352,11 @@
       const input = document.getElementById('guess-input');
       const val = parseInt(input.value);
 
-      if (!val || val < 1 || val > 100) {
-        showHint('1〜100 の数字を入力してね', '');
+      if (!val || val < 1 || val > maxVal) {
+        const hintEl = document.getElementById('hint');
+        hintEl.style.display = 'inline-block';
+        hintEl.className = 'hint high';
+        hintEl.textContent = `1〜${maxVal} の数字を入力してね`;
         return;
       }
 
@@ -239,6 +375,7 @@
         hintEl.textContent = `🎉 正解！ ${tries}回で当てた！`;
         input.disabled = true;
         document.getElementById('guess-btn').disabled = true;
+        launchFireworks();
       } else if (val > answer) {
         high = Math.min(high, val - 1);
         hintEl.className = 'hint high';
@@ -259,13 +396,114 @@
       document.getElementById('history').prepend(tag);
     }
 
+    // 難易度ボタン
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => startGame(Number(btn.dataset.level)));
+    });
+
     document.getElementById('guess-btn').addEventListener('click', guess);
-    document.getElementById('reset-btn').addEventListener('click', init);
+    document.getElementById('reset-btn').addEventListener('click', showDifficultyScreen);
     document.getElementById('guess-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') guess();
     });
 
-    init();
+    // --- 花火アニメーション ---
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let rafId = null;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const COLORS = [
+      '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff',
+      '#ff922b', '#cc5de8', '#f06595', '#74c0fc',
+      '#ffffff', '#ffe066',
+    ];
+
+    function createBurst(x, y) {
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      const count = 80 + Math.floor(Math.random() * 40);
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
+        const speed = 2 + Math.random() * 5;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          color,
+          radius: 2 + Math.random() * 2,
+          gravity: 0.08 + Math.random() * 0.04,
+          trail: [],
+        });
+      }
+    }
+
+    function animateFireworks() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles = particles.filter(p => p.alpha > 0.02);
+
+      for (const p of particles) {
+        p.trail.push({ x: p.x, y: p.y });
+        if (p.trail.length > 5) p.trail.shift();
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.vx *= 0.98;
+        p.alpha -= 0.018;
+
+        for (let i = 0; i < p.trail.length; i++) {
+          ctx.beginPath();
+          ctx.arc(p.trail[i].x, p.trail[i].y, p.radius * (i / p.trail.length), 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.alpha * (i / p.trail.length) * 0.5;
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+      if (particles.length > 0) {
+        rafId = requestAnimationFrame(animateFireworks);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        rafId = null;
+      }
+    }
+
+    function launchFireworks() {
+      particles = [];
+      if (rafId) cancelAnimationFrame(rafId);
+
+      let shot = 0;
+      const maxShots = 8;
+      function shootNext() {
+        if (shot >= maxShots) return;
+        shot++;
+        const x = canvas.width * (0.2 + Math.random() * 0.6);
+        const y = canvas.height * (0.15 + Math.random() * 0.45);
+        createBurst(x, y);
+        setTimeout(shootNext, 250 + Math.random() * 300);
+      }
+
+      shootNext();
+      rafId = requestAnimationFrame(animateFireworks);
+    }
+
+    // 起動時は難易度選択画面を表示
+    showDifficultyScreen();
   </script>
 </body>
 </html>
