@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数当てゲーム</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      width: 380px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      color: #e2e8f0;
+      font-size: 1.6rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 30px;
+    }
+
+    .hint-box {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .hint {
+      font-size: 1.4rem;
+      font-weight: bold;
+      padding: 10px 24px;
+      border-radius: 50px;
+      display: none;
+    }
+
+    .hint.high {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .hint.low {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .hint.correct {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      font-size: 1.1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: rgba(99, 102, 241, 0.7);
+    }
+
+    input[type="number"]::placeholder { color: #64748b; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #guess-btn {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      white-space: nowrap;
+    }
+
+    #guess-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    #guess-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #reset-btn {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 4px;
+    }
+
+    #reset-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #e2e8f0;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-item { color: #94a3b8; font-size: 0.85rem; }
+    .stat-value { color: #e2e8f0; font-size: 1.3rem; font-weight: bold; display: block; margin-top: 2px; }
+
+    .history {
+      margin-top: 20px;
+      max-height: 100px;
+      overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎯 数当てゲーム</h1>
+    <p class="subtitle">1〜100 の数字を当ててみよう！</p>
+
+    <div class="hint-box">
+      <div class="hint" id="hint"></div>
+    </div>
+
+    <div class="input-row">
+      <input type="number" id="guess-input" min="1" max="100" placeholder="1〜100">
+      <button id="guess-btn">決定</button>
+    </div>
+
+    <button id="reset-btn">🔄 リセット</button>
+
+    <div class="stats">
+      <div class="stat-item">試行回数<span class="stat-value" id="tries">0</span></div>
+      <div class="stat-item">範囲<span class="stat-value" id="range">1〜100</span></div>
+    </div>
+
+    <div class="history" id="history"></div>
+  </div>
+
+  <script>
+    let answer, tries, low, high, guessed;
+
+    function init() {
+      answer = Math.floor(Math.random() * 100) + 1;
+      tries = 0;
+      low = 1;
+      high = 100;
+      guessed = false;
+
+      document.getElementById('hint').style.display = 'none';
+      document.getElementById('hint').className = 'hint';
+      document.getElementById('guess-input').value = '';
+      document.getElementById('guess-input').disabled = false;
+      document.getElementById('guess-btn').disabled = false;
+      document.getElementById('tries').textContent = '0';
+      document.getElementById('range').textContent = '1〜100';
+      document.getElementById('history').innerHTML = '';
+      document.getElementById('guess-input').focus();
+    }
+
+    function guess() {
+      if (guessed) return;
+
+      const input = document.getElementById('guess-input');
+      const val = parseInt(input.value);
+
+      if (!val || val < 1 || val > 100) {
+        showHint('1〜100 の数字を入力してね', '');
+        return;
+      }
+
+      tries++;
+      document.getElementById('tries').textContent = tries;
+      addHistory(val);
+      input.value = '';
+      input.focus();
+
+      const hintEl = document.getElementById('hint');
+      hintEl.style.display = 'inline-block';
+
+      if (val === answer) {
+        guessed = true;
+        hintEl.className = 'hint correct';
+        hintEl.textContent = `🎉 正解！ ${tries}回で当てた！`;
+        input.disabled = true;
+        document.getElementById('guess-btn').disabled = true;
+      } else if (val > answer) {
+        high = Math.min(high, val - 1);
+        hintEl.className = 'hint high';
+        hintEl.textContent = '📈 もっと小さい';
+      } else {
+        low = Math.max(low, val + 1);
+        hintEl.className = 'hint low';
+        hintEl.textContent = '📉 もっと大きい';
+      }
+
+      document.getElementById('range').textContent = `${low}〜${high}`;
+    }
+
+    function addHistory(val) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = val;
+      document.getElementById('history').prepend(tag);
+    }
+
+    document.getElementById('guess-btn').addEventListener('click', guess);
+    document.getElementById('reset-btn').addEventListener('click', init);
+    document.getElementById('guess-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') guess();
+    });
+
+    init();
+  </script>
+</body>
+</html>
