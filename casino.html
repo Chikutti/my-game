@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chikutti Casino</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --gold-dark: #8b6914;
+      --black: #0a0a0a;
+      --dark: #111111;
+      --darker: #1a1a1a;
+      --green: #1a5c2a;
+      --green-dark: #0d3318;
+      --green-bright: #2d8a45;
+      --text-light: #e8e0cc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--black);
+      color: var(--text-light);
+      font-family: 'Noto Sans JP', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== パーティクル背景 ===== */
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0;
+      animation: float-up linear infinite;
+    }
+
+    @keyframes float-up {
+      0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.3; }
+      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ===== ヘッダー ===== */
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 60px 20px 40px;
+      background: linear-gradient(180deg, #000 0%, transparent 100%);
+    }
+
+    .logo-wrapper {
+      display: inline-block;
+      position: relative;
+    }
+
+    .logo-suit {
+      font-size: 1.4rem;
+      color: var(--gold);
+      letter-spacing: 12px;
+      display: block;
+      margin-bottom: 8px;
+      animation: pulse-suits 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-suits {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.08); }
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-light) 40%, var(--gold) 60%, var(--gold-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 20px rgba(201, 168, 76, 0.5));
+      animation: shimmer 4s ease-in-out infinite;
+      background-size: 200% 100%;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 100% 50%; }
+      50%  { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    .logo-tagline {
+      font-size: 0.8rem;
+      letter-spacing: 6px;
+      color: var(--gold);
+      opacity: 0.7;
+      text-transform: uppercase;
+      margin-top: 10px;
+    }
+
+    .header-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 24px auto 0;
+      max-width: 500px;
+    }
+
+    .header-divider::before,
+    .header-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .header-divider span {
+      color: var(--gold);
+      font-size: 1.1rem;
+    }
+
+    /* ===== ナビゲーション ===== */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: rgba(201, 168, 76, 0.05);
+      border-top: 1px solid rgba(201, 168, 76, 0.2);
+      border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 2px;
+      padding: 6px 18px;
+      border: 1px solid transparent;
+      border-radius: 2px;
+      transition: all 0.3s;
+      text-transform: uppercase;
+    }
+
+    nav a:hover {
+      border-color: var(--gold);
+      background: rgba(201, 168, 76, 0.1);
+    }
+
+    /* ===== メインコンテンツ ===== */
+    main {
+      position: relative;
+      z-index: 10;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 20px 80px;
+    }
+
+    /* ===== セクションタイトル ===== */
+    .section-title {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-title h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: var(--gold);
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+    }
+
+    .section-title p {
+      font-size: 0.85rem;
+      color: rgba(232, 224, 204, 0.5);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ===== ゲームカードグリッド ===== */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 36px;
+      justify-content: center;
+    }
+
+    /* ===== ゲームカード ===== */
+    .game-card {
+      position: relative;
+      background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      color: inherit;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 50%, rgba(201,168,76,0.03) 100%);
+      pointer-events: none;
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px);
+      box-shadow:
+        0 20px 60px rgba(0,0,0,0.8),
+        0 0 0 1px rgba(201, 168, 76, 0.6),
+        0 0 40px rgba(201, 168, 76, 0.15);
+    }
+
+    .card-banner {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ブラックジャック */
+    .blackjack-banner {
+      background: linear-gradient(135deg, #0d2d1a 0%, var(--green-dark) 50%, #1a4a28 100%);
+    }
+
+    /* バカラ */
+    .baccarat-banner {
+      background: linear-gradient(135deg, #1a0d2d 0%, #2d1a4a 50%, #1a0d2d 100%);
+    }
+
+    .banner-decoration {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* カードのビジュアル */
+    .playing-cards {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .card-visual {
+      position: absolute;
+      width: 72px;
+      height: 100px;
+      background: white;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      font-size: 2rem;
+      font-weight: 900;
+      font-family: 'Georgia', serif;
+    }
+
+    .card-visual .rank {
+      font-size: 1.1rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .card-visual .suit {
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .card-v1 {
+      transform: rotate(-12deg) translate(-30px, 10px);
+      color: #1a1a1a;
+      z-index: 1;
+    }
+
+    .card-v2 {
+      transform: rotate(5deg) translate(20px, -5px);
+      color: #c0392b;
+      z-index: 2;
+    }
+
+    .card-v3 {
+      transform: rotate(-3deg) translate(-5px, 5px);
+      z-index: 3;
+    }
+
+    .blackjack-banner .card-v3 { color: #1a1a1a; }
+    .baccarat-banner .card-v1 { color: #c0392b; }
+    .baccarat-banner .card-v2 { color: #1a1a1a; }
+    .baccarat-banner .card-v3 { color: #c0392b; }
+
+    .chip {
+      position: absolute;
+      border-radius: 50%;
+      border: 3px dashed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      animation: spin-chip 8s linear infinite;
+    }
+
+    @keyframes spin-chip {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .chip-1 {
+      width: 48px; height: 48px;
+      bottom: 15px; right: 15px;
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(0,0,0,0.7);
+    }
+
+    .chip-2 {
+      width: 36px; height: 36px;
+      top: 20px; left: 20px;
+      border-color: var(--green-bright);
+      color: var(--green-bright);
+      background: rgba(0,0,0,0.7);
+      animation-duration: 12s;
+      animation-direction: reverse;
+    }
+
+    .card-body {
+      padding: 28px 28px 32px;
+    }
+
+    .game-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.4);
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 14px;
+    }
+
+    .game-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+
+    .game-desc {
+      font-size: 0.87rem;
+      color: rgba(232, 224, 204, 0.65);
+      line-height: 1.9;
+      margin-bottom: 26px;
+    }
+
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 32px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-dark));
+      background-size: 200% 100%;
+      color: var(--black);
+      font-weight: 700;
+      font-size: 0.88rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Noto Sans JP', sans-serif;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .play-btn:hover {
+      background-position: 100% 0;
+      box-shadow: 0 4px 20px rgba(201, 168, 76, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .play-btn .arrow {
+      font-size: 1.1rem;
+      transition: transform 0.3s;
+    }
+
+    .game-card:hover .play-btn .arrow {
+      transform: translateX(4px);
+    }
+
+    /* ===== 装飾バー ===== */
+    .deco-bar {
+      text-align: center;
+      padding: 50px 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .deco-bar .suits-row {
+      font-size: 1.8rem;
+      letter-spacing: 20px;
+      color: rgba(201, 168, 76, 0.25);
+      animation: fade-suits 4s ease-in-out infinite;
+    }
+
+    @keyframes fade-suits {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 0.7; }
+    }
+
+    /* ===== ルーレットアニメーション ===== */
+    .roulette-section {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 0 20px 60px;
+    }
+
+    .roulette-wheel {
+      display: inline-block;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      position: relative;
+      animation: spin-wheel 10s linear infinite;
+      box-shadow:
+        0 0 20px rgba(201, 168, 76, 0.3),
+        inset 0 0 20px rgba(0,0,0,0.5);
+      background: conic-gradient(
+        #c0392b 0deg 30deg,
+        #1a1a1a 30deg 60deg,
+        #c0392b 60deg 90deg,
+        #1a1a1a 90deg 120deg,
+        #c0392b 120deg 150deg,
+        #1a1a1a 150deg 180deg,
+        #c0392b 180deg 210deg,
+        #1a1a1a 210deg 240deg,
+        #c0392b 240deg 270deg,
+        #1a1a1a 270deg 300deg,
+        #c0392b 300deg 330deg,
+        #1a1a1a 330deg 360deg
+      );
+    }
+
+    @keyframes spin-wheel {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ===== フッター ===== */
+    footer {
+      position: relative;
+      z-index: 10;
+      background: var(--darker);
+      border-top: 1px solid rgba(201, 168, 76, 0.2);
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .footer-suits {
+      font-size: 1rem;
+      letter-spacing: 8px;
+      color: rgba(201, 168, 76, 0.4);
+      margin-bottom: 10px;
+    }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(232, 224, 204, 0.35);
+      letter-spacing: 2px;
+    }
+
+    /* ===== レスポンシブ ===== */
+    @media (max-width: 640px) {
+      header { padding: 40px 16px 30px; }
+      main   { padding: 40px 16px 60px; }
+
+      .games-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .card-banner { height: 160px; }
+      .card-body   { padding: 20px 20px 24px; }
+
+      nav a { font-size: 0.75rem; padding: 5px 12px; letter-spacing: 1px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- パーティクル背景 -->
+  <div id="particles"></div>
+
+  <!-- ヘッダー -->
+  <header>
+    <div class="logo-wrapper">
+      <span class="logo-suit">♠ ♥ ♦ ♣</span>
+      <div class="logo">Chikutti Casino</div>
+      <div class="logo-tagline">Luxury · Elegance · Fortune</div>
+    </div>
+    <div class="header-divider">
+      <span>✦</span>
+    </div>
+  </header>
+
+  <!-- ナビゲーション -->
+  <nav>
+    <a href="#">ホーム</a>
+    <a href="blackjack.html">ブラックジャック</a>
+    <a href="baccarat.html">バカラ</a>
+  </nav>
+
+  <!-- メイン -->
+  <main>
+    <div class="section-title">
+      <h2>ゲームを選ぶ</h2>
+      <p>Choose Your Game</p>
+    </div>
+
+    <div class="games-grid">
+
+      <!-- ブラックジャック -->
+      <a href="blackjack.html" class="game-card">
+        <div class="card-banner blackjack-banner">
+          <div class="banner-decoration">
+            <div class="playing-cards">
+              <div class="card-visual card-v1">
+                <span class="rank">K</span>
+                <span class="suit">♠</span>
+              </div>
+              <div class="card-visual card-v2">
+                <span class="rank">A</span>
+                <span class="suit">♥</span>
+              </div>
+            </div>
+          </div>
+          <div class="chip chip-1">BET</div>
+          <div class="chip chip-2">21</div>
+        </div>
+        <div class="card-body">
+          <span class="game-badge">Card Game</span>
+          <div class="game-name">Blackjack</div>
+          <p class="game-desc">
+            ディーラーと1対1の真剣勝負。手札の合計を21に近づけ、バストせずにディーラーを上回れ。スキルと戦略が勝敗を左右する最高峰のカードゲーム。
+          </p>
+          <button class="play-btn">
+            プレイする <span class="arrow">→</span>
+          </button>
+        </div>
+      </a>
+
+      <!-- バカラ -->
+      <a href="baccarat.html" class="game-card">
+        <div class="card-banner baccarat-banner">
+          <div class="banner-decoration">
+            <div class="playing-cards">
+              <div class="card-visual card-v1">
+                <span class="rank">9</span>
+                <span class="suit">♦</span>
+              </div>
+              <div class="card-visual card-v2">
+                <span class="rank">8</span>
+                <span class="suit">♣</span>
+              </div>
+            </div>
+          </div>
+          <div class="chip chip-1">BET</div>
+          <div class="chip chip-2">VIP</div>
+        </div>
+        <div class="card-body">
+          <span class="game-badge">VIP Game</span>
+          <div class="game-name">Baccarat</div>
+          <p class="game-desc">
+            世界中のVIPに愛される究極の高級カードゲーム。プレイヤーかバンカー、どちらが9に近いかを読み切れ。シンプルなルールに秘められた深い駆け引きを体験せよ。
+          </p>
+          <button class="play-btn">
+            プレイする <span class="arrow">→</span>
+          </button>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- ルーレット装飾 -->
+  <div class="deco-bar">
+    <div class="suits-row">♠ ♥ ♦ ♣ ♠ ♥ ♦ ♣</div>
+  </div>
+
+  <div class="roulette-section">
+    <div class="roulette-wheel"></div>
+  </div>
+
+  <!-- フッター -->
+  <footer>
+    <div class="footer-suits">♠ ♥ ♦ ♣</div>
+    <div class="footer-copy">© Chikutti Casino. All rights reserved.</div>
+  </footer>
+
+  <script>
+    // パーティクル生成
+    const container = document.getElementById('particles');
+    const colors = ['#c9a84c', '#f0d080', '#2d8a45', '#ffffff'];
+
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+
+      const size = Math.random() * 4 + 2;
+      p.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        left: ${Math.random() * 100}%;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        animation-duration: ${Math.random() * 12 + 8}s;
+        animation-delay: ${Math.random() * 10}s;
+        opacity: 0;
+      `;
+      container.appendChild(p);
+    }
+
+    // カードホバー時のサウンドビジュアル効果
+    document.querySelectorAll('.game-card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.style.borderColor = 'rgba(201, 168, 76, 0.7)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.borderColor = 'rgba(201, 168, 76, 0.3)';
+      });
+    });
+  </script>
+
+</body>
+</html>
