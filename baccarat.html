@@ -363,6 +363,21 @@
     }
     .rm-empty { color: rgba(255,255,255,.28); text-align: center; padding: 20px; font-size: .85rem; }
 
+    /* ── トップへ戻るボタン ── */
+    .top-nav {
+      width: 100%; max-width: 700px; margin: 0 auto 2px;
+      display: flex; padding: 0 4px;
+    }
+    .home-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 20px;
+      background: rgba(212,168,67,.08); border: 1px solid rgba(212,168,67,.3);
+      color: rgba(212,168,67,.65); font-size: .75rem; letter-spacing: 1px;
+      text-decoration: none; transition: all .2s;
+    }
+    .home-btn:hover { background: rgba(212,168,67,.18); border-color: var(--gold); color: var(--gold); }
+    .home-btn:active { transform: scale(0.96); }
+
     /* ── ルール説明ボタン ── */
     .rules-btn {
       display: inline-flex; align-items: center; gap: 5px;
@@ -528,6 +543,10 @@
 </head>
 <body>
 
+<div class="top-nav">
+  <a class="home-btn" href="casino.html">← トップへ戻る</a>
+</div>
+
 <div class="header">
   <h1>♠ BACCARAT ♦</h1>
   <div class="subtitle">♥ カジノ バカラ ♣</div>
@@ -655,6 +674,7 @@
     <div class="result-payout" id="res-payout"></div>
     <div class="result-side"   id="res-side"></div>
     <button class="replay-btn" id="replay-btn">もう一度</button>
+    <button class="replay-btn" id="reset-btn" style="display:none;margin-top:8px;background:linear-gradient(135deg,#4b5563,#1f2937);color:#fff">リセット（1000チップ）</button>
   </div>
 </div>
 
@@ -934,12 +954,16 @@ const G = {
 };
 
 function save() {
-  localStorage.setItem('bacc3_save', JSON.stringify({ chips: G.chips, stats: G.stats }));
+  localStorage.setItem('casinoChips', G.chips);
+  localStorage.setItem('bacc3_stats', JSON.stringify(G.stats));
 }
 function load() {
   try {
-    const d = JSON.parse(localStorage.getItem('bacc3_save') || 'null');
-    if (d) { G.chips = d.chips ?? 1000; Object.assign(G.stats, d.stats); }
+    const savedChips = localStorage.getItem('casinoChips');
+    G.chips = savedChips !== null ? parseInt(savedChips, 10) : 1000;
+    if (isNaN(G.chips) || G.chips <= 0) G.chips = 1000;
+    const savedStats = JSON.parse(localStorage.getItem('bacc3_stats') || 'null');
+    if (savedStats) Object.assign(G.stats, savedStats);
   } catch {}
 }
 const totalBet = () => G.bet + G.sideBets.ppair + G.sideBets.bpair + G.sideBets.natural;
@@ -1013,6 +1037,7 @@ function updateBetUI() {
   $id('sb-natural-amt').textContent = G.sideBets.natural;
   const avail = G.chips - totalBet();
   document.querySelectorAll('.chip').forEach(b => { b.disabled = avail < +b.dataset.v; });
+  save();
 }
 
 function updateStatsUI() {
@@ -1337,7 +1362,12 @@ function finalize(sideLines) {
     ? 'サイド: ' + sideLines.join(' / ')
     : '';
 
-  setTimeout(() => $id('overlay').classList.add('show'), 450);
+  setTimeout(() => {
+    $id('overlay').classList.add('show');
+    const noChips = G.chips <= 0;
+    $id('replay-btn').style.display = noChips ? 'none' : '';
+    $id('reset-btn').style.display  = noChips ? '' : 'none';
+  }, 450);
 }
 
 // ─────────────────────────────────────────
@@ -1355,12 +1385,14 @@ function resetRound() {
   $id('banker-score').className = 'hand-score';
   setBetTarget('main');
 
-  if (G.chips <= 0) {
-    G.chips = 1000;
-    setTimeout(() => alert('チップがなくなりました！\n1000チップで再スタートします。'), 100);
-  }
   updateBetUI();
   lockControls(false);
+}
+
+function resetGame() {
+  G.chips = 1000;
+  save();
+  resetRound();
 }
 
 function shakeDeal() {
@@ -1407,6 +1439,7 @@ document.querySelectorAll('.sb-btn').forEach(b => b.addEventListener('click', ()
 // ディール / もう一度
 $id('deal-btn').addEventListener('click', startGame);
 $id('replay-btn').addEventListener('click', resetRound);
+$id('reset-btn').addEventListener('click', resetGame);
 
 // ルール説明
 $id('rules-btn').addEventListener('click', () => $id('rules-modal').classList.add('show'));
