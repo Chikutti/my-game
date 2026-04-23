@@ -143,6 +143,67 @@
       font-size: 1.1rem;
     }
 
+    /* ===== 所持金表示 ===== */
+    .chips-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 22px;
+      padding: 10px 26px;
+      background: linear-gradient(135deg,
+        rgba(201,168,76,0.06) 0%,
+        rgba(201,168,76,0.14) 50%,
+        rgba(201,168,76,0.06) 100%);
+      border: 1px solid rgba(201,168,76,0.45);
+      border-radius: 40px;
+      box-shadow:
+        0 0 24px rgba(201,168,76,0.12),
+        inset 0 1px 0 rgba(201,168,76,0.18);
+    }
+
+    .chips-coin {
+      font-size: 1.15rem;
+      filter: drop-shadow(0 0 6px rgba(201,168,76,0.7));
+      animation: pulse-suits 3s ease-in-out infinite;
+    }
+
+    .chips-label {
+      font-size: 0.72rem;
+      letter-spacing: 3px;
+      color: rgba(201,168,76,0.65);
+      text-transform: uppercase;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    .chips-sep {
+      color: rgba(201,168,76,0.35);
+      font-size: 0.85rem;
+    }
+
+    .chips-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-light) 45%, var(--gold) 65%, var(--gold-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-size: 200% 100%;
+      animation: shimmer 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(201,168,76,0.45));
+      min-width: 3ch;
+      text-align: right;
+    }
+
+    .chips-unit {
+      font-size: 0.68rem;
+      letter-spacing: 2px;
+      color: rgba(201,168,76,0.55);
+      text-transform: uppercase;
+      align-self: flex-end;
+      margin-bottom: 2px;
+    }
+
     /* ===== ナビゲーション ===== */
     nav {
       position: relative;
@@ -546,6 +607,13 @@
     <div class="header-divider">
       <span>✦</span>
     </div>
+    <div class="chips-display">
+      <span class="chips-coin">🪙</span>
+      <span class="chips-label">所持金</span>
+      <span class="chips-sep">：</span>
+      <span class="chips-amount" id="header-chips">1,000</span>
+      <span class="chips-unit">chips</span>
+    </div>
   </header>
 
   <!-- ナビゲーション -->
@@ -643,6 +711,14 @@
   </footer>
 
   <script>
+    // 所持金読み込み
+    (function () {
+      const saved = localStorage.getItem('casinoChips');
+      const n = saved !== null ? parseInt(saved, 10) : NaN;
+      const chips = (!isNaN(n) && n > 0) ? n : 1000;
+      document.getElementById('header-chips').textContent = chips.toLocaleString();
+    })();
+
     // パーティクル生成
     const container = document.getElementById('particles');
     const colors = ['#c9a84c', '#f0d080', '#2d8a45', '#ffffff'];
