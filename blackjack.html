@@ -156,9 +156,18 @@
 
     /* ── ルール説明ボタン ── */
     .rules-btn-wrap {
-      width: 100%; max-width: 680px; display: flex; justify-content: flex-end;
-      margin-bottom: 10px;
+      width: 100%; max-width: 680px; display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 10px;
     }
+    #btn-home {
+      background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.75); font-size: 0.82rem; font-weight: bold; letter-spacing: 1px;
+      padding: 7px 16px; border-radius: 20px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; text-decoration: none;
+      transition: background 0.18s, transform 0.12s, border-color 0.18s;
+    }
+    #btn-home:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); color: #fff; }
+    #btn-home:active { transform: scale(0.95); }
     #btn-rules {
       background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3);
       color: #fff; font-size: 0.82rem; font-weight: bold; letter-spacing: 1px;
@@ -347,8 +356,9 @@
 <body>
   <h1>♠ Blackjack ♣</h1>
 
-  <!-- ルール説明ボタン -->
+  <!-- トップナビ -->
   <div class="rules-btn-wrap">
+    <a id="btn-home" href="casino.html">← トップへ戻る</a>
     <button id="btn-rules" onclick="openRules()">
       <span class="rules-icon">📖</span> ルール説明
     </button>
@@ -726,6 +736,7 @@
         void el.offsetWidth;
         el.classList.add('chip-'+animType);
       }
+      saveChips();
     }
 
     function updateBetBar() {
@@ -735,6 +746,16 @@
       } else {
         bar.innerHTML = `賭け金：<b>${currentBet.toLocaleString()}</b> チップ`;
       }
+    }
+
+    /* ── localStorage ────────────────────── */
+    function saveChips() {
+      localStorage.setItem('casinoChips', chips);
+    }
+    function loadChips() {
+      const saved = localStorage.getItem('casinoChips');
+      chips = saved !== null ? parseInt(saved, 10) : 1000;
+      if (isNaN(chips) || chips <= 0) chips = 1000;
     }
 
     /* ── ルール説明モーダル ───────────────── */
@@ -1192,10 +1213,11 @@
     }
 
     /* ── 初期化 ───────────────────────────── */
-    chips=1000; currentBet=0; selectedBet=0;
+    loadChips(); currentBet=0; selectedBet=0;
     isSplit=false; splitHands=[[],[]]; splitBets=[0,0]; activeHandIdx=0;
     stats={games:0, wins:0, losses:0, draws:0, streak:0, bestStreak:0};
     refreshChipButtons();
+    updateChipsDisplay(null);
     updateStats();
     showPhase('bet');
   </script>
