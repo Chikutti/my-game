@@ -322,6 +322,11 @@
       background: linear-gradient(135deg, #1a0d2d 0%, #2d1a4a 50%, #1a0d2d 100%);
     }
 
+    /* アルティメットテキサスホールデム */
+    .holdem-banner {
+      background: linear-gradient(135deg, #0d1a2e 0%, #0e2a42 50%, #0d1a2e 100%);
+    }
+
     .banner-decoration {
       position: absolute;
       inset: 0;
@@ -385,6 +390,9 @@
     .baccarat-banner .card-v1 { color: #c0392b; }
     .baccarat-banner .card-v2 { color: #1a1a1a; }
     .baccarat-banner .card-v3 { color: #c0392b; }
+    .holdem-banner .card-v1 { color: #1a1a1a; }
+    .holdem-banner .card-v2 { color: #c0392b; }
+    .holdem-banner .card-v3 { color: #c0392b; }
 
     .chip {
       position: absolute;
@@ -621,6 +629,7 @@
     <a href="#">ホーム</a>
     <a href="blackjack.html">ブラックジャック</a>
     <a href="baccarat.html">バカラ</a>
+    <a href="ultimate.html">テキサスホールデム</a>
   </nav>
 
   <!-- メイン -->
@@ -685,6 +694,40 @@
           <div class="game-name">Baccarat</div>
           <p class="game-desc">
             世界中のVIPに愛される究極の高級カードゲーム。プレイヤーかバンカー、どちらが9に近いかを読み切れ。シンプルなルールに秘められた深い駆け引きを体験せよ。
+          </p>
+          <button class="play-btn">
+            プレイする <span class="arrow">→</span>
+          </button>
+        </div>
+      </a>
+
+      <!-- アルティメットテキサスホールデム -->
+      <a href="ultimate.html" class="game-card">
+        <div class="card-banner holdem-banner">
+          <div class="banner-decoration">
+            <div class="playing-cards">
+              <div class="card-visual card-v1">
+                <span class="rank">A</span>
+                <span class="suit">♠</span>
+              </div>
+              <div class="card-visual card-v2">
+                <span class="rank">K</span>
+                <span class="suit">♥</span>
+              </div>
+              <div class="card-visual card-v3">
+                <span class="rank">Q</span>
+                <span class="suit">♦</span>
+              </div>
+            </div>
+          </div>
+          <div class="chip chip-1">ANTE</div>
+          <div class="chip chip-2">PLAY</div>
+        </div>
+        <div class="card-body">
+          <span class="game-badge">Poker Game</span>
+          <div class="game-name">Ultimate Texas Hold'em</div>
+          <p class="game-desc">
+            ディーラーと1対1のポーカーゲーム。ANTE・BLIND・PLAYの3つのベットで戦う本格派。最高のハンドを作り上げ、ディーラーを打ち負かせ。
           </p>
           <button class="play-btn">
             プレイする <span class="arrow">→</span>
