@@ -520,7 +520,63 @@
       50%       { opacity: 0.7; }
     }
 
-    /* ===== ルーレットアニメーション ===== */
+    /* ===== ルーレットカードバナー ===== */
+    .roulette-banner {
+      background: linear-gradient(135deg, #1a0a0a 0%, #2d0d0d 50%, #1a0a0a 100%);
+    }
+
+    .roulette-visual {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wheel-svg {
+      width: 110px;
+      height: 110px;
+      animation: spin-wheel 10s linear infinite;
+      filter: drop-shadow(0 0 12px rgba(201,168,76,0.4));
+    }
+
+    .wheel-center {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: radial-gradient(circle, var(--gold-light) 0%, var(--gold-dark) 100%);
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      z-index: 4;
+    }
+
+    .wheel-ball-orbit {
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      animation: orbit-ball 3s linear infinite;
+    }
+
+    .wheel-ball {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(255,255,255,0.8);
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+    }
+
+    @keyframes orbit-ball {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(-360deg); }
+    }
+
+    /* ===== ルーレットアニメーション（フッター装飾） ===== */
     .roulette-section {
       position: relative;
       z-index: 10;
@@ -630,6 +686,7 @@
     <a href="blackjack.html">ブラックジャック</a>
     <a href="baccarat.html">バカラ</a>
     <a href="ultimate.html">テキサスホールデム</a>
+    <a href="roulette.html">ルーレット</a>
   </nav>
 
   <!-- メイン -->
@@ -728,6 +785,76 @@
           <div class="game-name">Ultimate Texas Hold'em</div>
           <p class="game-desc">
             ディーラーと1対1のポーカーゲーム。ANTE・BLIND・PLAYの3つのベットで戦う本格派。最高のハンドを作り上げ、ディーラーを打ち負かせ。
+          </p>
+          <button class="play-btn">
+            プレイする <span class="arrow">→</span>
+          </button>
+        </div>
+      </a>
+
+      <!-- ヨーロピアンルーレット -->
+      <a href="roulette.html" class="game-card">
+        <div class="card-banner roulette-banner">
+          <div class="banner-decoration">
+            <div class="roulette-visual">
+              <svg class="wheel-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+                <!-- 外枠 -->
+                <circle cx="55" cy="55" r="53" fill="none" stroke="#c9a84c" stroke-width="2"/>
+                <!-- 37ポケット（0〜36） -->
+                <!-- 0: 緑 -->
+                <path d="M55 55 L55 4 A51 51 0 0 1 63.7 5.6 Z" fill="#1a8a2a"/>
+                <!-- 赤・黒 交互 -->
+                <path d="M55 55 L63.7 5.6 A51 51 0 0 1 72.1 10.0 Z" fill="#c0392b"/>
+                <path d="M55 55 L72.1 10.0 A51 51 0 0 1 79.9 16.6 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L79.9 16.6 A51 51 0 0 1 86.7 25.1 Z" fill="#c0392b"/>
+                <path d="M55 55 L86.7 25.1 A51 51 0 0 1 92.1 35.0 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L92.1 35.0 A51 51 0 0 1 95.8 46.0 Z" fill="#c0392b"/>
+                <path d="M55 55 L95.8 46.0 A51 51 0 0 1 97.5 57.5 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L97.5 57.5 A51 51 0 0 1 97.1 68.5 Z" fill="#c0392b"/>
+                <path d="M55 55 L97.1 68.5 A51 51 0 0 1 94.5 79.1 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L94.5 79.1 A51 51 0 0 1 89.8 88.7 Z" fill="#c0392b"/>
+                <path d="M55 55 L89.8 88.7 A51 51 0 0 1 83.3 96.8 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L83.3 96.8 A51 51 0 0 1 75.3 103.0 Z" fill="#c0392b"/>
+                <path d="M55 55 L75.3 103.0 A51 51 0 0 1 66.2 106.9 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L66.2 106.9 A51 51 0 0 1 56.7 108.5 Z" fill="#c0392b"/>
+                <path d="M55 55 L56.7 108.5 A51 51 0 0 1 47.2 108.0 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L47.2 108.0 A51 51 0 0 1 38.2 105.4 Z" fill="#c0392b"/>
+                <path d="M55 55 L38.2 105.4 A51 51 0 0 1 29.9 100.8 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L29.9 100.8 A51 51 0 0 1 22.8 94.4 Z" fill="#c0392b"/>
+                <path d="M55 55 L22.8 94.4 A51 51 0 0 1 17.2 86.5 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L17.2 86.5 A51 51 0 0 1 13.2 77.4 Z" fill="#c0392b"/>
+                <path d="M55 55 L13.2 77.4 A51 51 0 0 1 11.0 67.6 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L11.0 67.6 A51 51 0 0 1 10.6 57.4 Z" fill="#c0392b"/>
+                <path d="M55 55 L10.6 57.4 A51 51 0 0 1 12.1 47.4 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L12.1 47.4 A51 51 0 0 1 15.4 38.0 Z" fill="#c0392b"/>
+                <path d="M55 55 L15.4 38.0 A51 51 0 0 1 20.5 29.4 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L20.5 29.4 A51 51 0 0 1 27.2 22.3 Z" fill="#c0392b"/>
+                <path d="M55 55 L27.2 22.3 A51 51 0 0 1 35.2 16.8 Z" fill="#1a1a1a"/>
+                <path d="M55 55 L35.2 16.8 A51 51 0 0 1 44.1 13.1 Z" fill="#c0392b"/>
+                <path d="M55 55 L44.1 13.1 A51 51 0 0 1 55 4 Z" fill="#1a1a1a"/>
+                <!-- 中央リング -->
+                <circle cx="55" cy="55" r="18" fill="#111" stroke="#c9a84c" stroke-width="1.5"/>
+                <circle cx="55" cy="55" r="10" fill="#1a1a1a" stroke="#8b6914" stroke-width="1"/>
+                <!-- スポーク -->
+                <line x1="55" y1="45" x2="55" y2="37" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                <line x1="55" y1="65" x2="55" y2="73" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                <line x1="45" y1="55" x2="37" y2="55" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                <line x1="65" y1="55" x2="73" y2="55" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+              </svg>
+              <div class="wheel-center"></div>
+              <div class="wheel-ball-orbit">
+                <div class="wheel-ball"></div>
+              </div>
+            </div>
+          </div>
+          <div class="chip chip-1">BET</div>
+          <div class="chip chip-2" style="border-color:#c0392b;color:#c0392b;">0</div>
+        </div>
+        <div class="card-body">
+          <span class="game-badge">Roulette</span>
+          <div class="game-name">European Roulette</div>
+          <p class="game-desc">
+            0〜36の37ポケット。赤黒・奇数偶数などシンプルな賭けから、1つの数字に絞った高配当ベットまで楽しめる本格ヨーロピアンルーレット。
           </p>
           <button class="play-btn">
             プレイする <span class="arrow">→</span>
