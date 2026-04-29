@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>European Roulette</title>
+<style>
+/* ── Reset & Root ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --felt:   #195e38;
+  --dark:   #071510;
+  --gold:   #d4af37;
+  --red:    #c0392b;
+  --black:  #1a1a1a;
+  --green:  #0f5c2e;
+  --rim:    #5a3e10;
+}
+html, body {
+  background: radial-gradient(ellipse at 50% 0%, #0e2418 0%, #071410 50%, #030b08 100%);
+  color: #fff;
+  font-family: Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, rgba(0,0,0,.92) 0%, rgba(5,15,10,.88) 100%);
+  border-bottom: 2px solid var(--gold);
+  box-shadow: 0 2px 28px rgba(212,175,55,.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 {
+  font-size: 1.1rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #8b6914 0%, #d4af37 28%, #f5d06e 50%, #d4af37 72%, #8b6914 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(212,175,55,.45));
+}
+.hdr-btn {
+  padding: 5px 14px;
+  background: transparent;
+  border: 1.5px solid rgba(212,175,55,.65);
+  color: #d4af37;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: .75rem;
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: background .15s, color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.hdr-btn:hover { background: linear-gradient(135deg,#8b6914,#d4af37); border-color: #d4af37; color: #111; }
+
+/* ── Stats Bar ──────────────────────────────────────────────── */
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  padding: 5px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(5,20,12,.4) 100%);
+  font-size: .77rem;
+  color: #7dbf9a;
+  border-bottom: 1px solid rgba(212,175,55,.3);
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+.stats-bar b { color: var(--gold); }
+
+/* ── Balance / Bet Info ─────────────────────────────────────── */
+.info-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(0,0,0,.3) 0%, rgba(5,20,12,.2) 100%);
+  border-bottom: 1px solid rgba(212,175,55,.15);
+}
+.info-bar .item .label {
+  font-size: .68rem;
+  color: #7dbf9a;
+  text-align: center;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.info-bar .item .value {
+  font-size: 1.28rem;
+  font-weight: bold;
+  color: var(--gold);
+  text-align: center;
+  text-shadow: 0 0 10px rgba(212,175,55,.4);
+}
+.info-bar .item .value.bet-val { color: #7dff9a; text-shadow: 0 0 10px rgba(100,255,150,.3); }
+
+/* ── Chip Selector ──────────────────────────────────────────── */
+.chips-row {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 12px;
+  flex-wrap: wrap;
+  background: linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(5,20,12,.18) 100%);
+  border-bottom: 1px solid rgba(212,175,55,.12);
+}
+.chip {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px dashed rgba(255,255,255,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .68rem;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .12s, box-shadow .12s, opacity .2s, filter .2s;
+  position: relative;
+  box-shadow: 0 3px 8px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.chip::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255,255,255,.35);
+}
+.chip:hover   { transform: scale(1.12); }
+.chip.sel {
+  border-style: solid;
+  border-color: #fff;
+  transform: scale(1.2);
+  box-shadow: 0 0 18px rgba(255,255,255,.8), 0 3px 10px rgba(0,0,0,.5);
+}
+.chip.unavail { opacity: .28; cursor: not-allowed; filter: grayscale(.65); }
+.chip.unavail:hover { transform: none; }
+.chip.c1    { background: linear-gradient(135deg, #d8d8d8 0%, #b0b0b0 50%, #888 100%); color: #222; border-color: #ccc; }
+.chip.c10   { background: linear-gradient(135deg, #3aa8e0 0%, #1a6fa8 100%); }
+.chip.c25   { background: linear-gradient(135deg, #32cc75 0%, #1a8a48 100%); }
+.chip.c50   { background: linear-gradient(135deg, #a868d0 0%, #6a28a0 100%); }
+.chip.c100  { background: linear-gradient(135deg, #f09030 0%, #b86010 100%); }
+.chip.c500  { background: linear-gradient(135deg, #e04040 0%, #a01818 100%); }
+.chip.c1k   { background: linear-gradient(135deg, #2c3e50 0%, #1a2535 100%); border-color: var(--gold) !important; color: var(--gold); }
+
+/* ── Wheel ──────────────────────────────────────────────────── */
+.wheel-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0 8px;
+  background: radial-gradient(ellipse at center, rgba(20,60,35,.35) 0%, transparent 65%);
+}
+#wheel-canvas {
+  border-radius: 50%;
+  display: block;
+  filter: drop-shadow(0 0 24px rgba(0,0,0,.85)) drop-shadow(0 0 10px rgba(212,175,55,.18));
+}
+
+/* ── Result Display ─────────────────────────────────────────── */
+.result-area {
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 12px;
+  text-align: center;
+}
+.result-ball {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+.result-ball.color-red   { background: var(--red); }
+.result-ball.color-black { background: #111; border: 2px solid #555; }
+.result-ball.color-green { background: var(--green); }
+.result-msg {
+  font-size: .88rem;
+  font-weight: bold;
+}
+.result-msg.win  { color: #4f4; }
+.result-msg.lose { color: #f55; }
+
+/* ── Number History ─────────────────────────────────────────── */
+.history-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 14px;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+.h-ball {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .6rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.h-ball.color-red   { background: var(--red); }
+.h-ball.color-black { background: #111; border: 1px solid #444; }
+.h-ball.color-green { background: var(--green); }
+
+/* ── Table Wrapper ──────────────────────────────────────────── */
+.table-wrap {
+  padding: 8px 12px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.betting-table {
+  margin: 0 auto;
+  width: fit-content;
+}
+
+/* ── Number Grid (absolutely-positioned cells inside) ───────── */
+#num-grid {
+  position: relative;
+  background: linear-gradient(160deg, #1c7242 0%, #165737 55%, #0f4028 100%);
+  border: 3px solid var(--gold);
+  border-radius: 6px;
+  box-shadow: inset 0 0 40px rgba(0,0,0,.38), 0 0 22px rgba(212,175,55,.12);
+}
+
+/* Number cells */
+.nc {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: .9rem;
+  cursor: pointer;
+  border-radius: 3px;
+  user-select: none;
+  transition: filter .1s;
+}
+.nc:hover  { filter: brightness(1.35); }
+.nc:active { filter: brightness(1.6); }
+.nc.color-red   { background: linear-gradient(135deg, #d04030 0%, #8a1a18 100%); color: #fff; }
+.nc.color-black { background: linear-gradient(135deg, #2a2a2a 0%, #060606 100%); color: #eee; }
+.nc.color-green { background: linear-gradient(135deg, #1a8840 0%, #084020 100%); color: #fff; }
+
+/* Bet zones (split / corner / street / sixline) */
+.bz {
+  position: absolute;
+  cursor: pointer;
+  z-index: 5;
+  border-radius: 2px;
+  transition: background .1s;
+}
+.bz:hover { background: rgba(255,220,50,.55); }
+
+.bz.street {
+  background: rgba(40,90,60,.8);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .56rem;
+  color: var(--gold);
+  font-weight: bold;
+}
+.bz.street:hover { background: rgba(255,220,50,.6); }
+
+.bz.sixline {
+  background: rgba(70,30,110,.8);
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .5rem;
+  color: var(--gold);
+  font-weight: bold;
+}
+.bz.sixline:hover { background: rgba(255,220,50,.6); }
+
+/* Chip overlay on grid */
+.chip-ovl {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(201,168,76,.95);
+  border: 2.5px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .5rem;
+  font-weight: bold;
+  color: #111;
+  pointer-events: none;
+  z-index: 40;
+  box-shadow: 0 2px 7px rgba(0,0,0,.6);
+}
+
+/* ── Outside Bets Section ───────────────────────────────────── */
+.ob-section {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ob-row {
+  display: flex;
+  gap: 4px;
+}
+.ob {
+  flex: 1;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1.5px solid rgba(212,175,55,.55);
+  background: linear-gradient(160deg, rgba(22,80,45,.92) 0%, rgba(10,50,28,.96) 100%);
+  user-select: none;
+  position: relative;
+  transition: background .15s, box-shadow .15s, border-color .15s;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+.ob:hover { background: rgba(212,175,55,.18); border-color: rgba(212,175,55,.85); }
+.ob.ob-red   { border-color: rgba(231,76,60,.75); background: linear-gradient(160deg, rgba(140,25,18,.75) 0%, rgba(90,10,8,.92) 100%); }
+.ob.ob-black { border-color: rgba(120,120,120,.55); background: linear-gradient(160deg, rgba(18,18,18,.82) 0%, rgba(5,5,5,.96) 100%); }
+.ob.has-bet  { box-shadow: inset 0 0 12px 2px rgba(212,175,55,.5), 0 0 8px rgba(212,175,55,.25); border-color: var(--gold); }
+
+/* Chip shown on outside bet */
+.ob-chip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(201,168,76,.95);
+  border: 2.5px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .5rem;
+  font-weight: bold;
+  color: #111;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,.5);
+}
+
+/* ── Controls ───────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 16px 20px;
+  flex-wrap: wrap;
+}
+.btn-spin {
+  padding: 14px 52px;
+  background: linear-gradient(135deg, #5a3e0a 0%, #c9a830 18%, #f5d06e 50%, #c9a830 82%, #5a3e0a 100%);
+  color: #1a0a00;
+  border: 2px solid rgba(255,220,100,.35);
+  border-radius: 30px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+  cursor: pointer;
+  box-shadow: 0 4px 22px rgba(212,175,55,.5), inset 0 1px 0 rgba(255,255,255,.35);
+  text-shadow: 0 1px 2px rgba(255,255,255,.2);
+  transition: transform .15s, box-shadow .15s, filter .15s;
+}
+.btn-spin:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(212,175,55,.7), inset 0 1px 0 rgba(255,255,255,.35);
+  filter: brightness(1.08);
+}
+.btn-spin:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+.btn-clear {
+  padding: 14px 26px;
+  background: transparent;
+  color: #f99;
+  border: 2px solid rgba(255,80,80,.55);
+  border-radius: 30px;
+  font-size: .88rem;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(255,80,80,.12);
+  transition: background .15s, box-shadow .15s;
+}
+.btn-clear:hover:not(:disabled) { background: rgba(255,85,85,.14); box-shadow: 0 2px 16px rgba(255,80,80,.28); }
+.btn-clear:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── Toast ──────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: rgba(10,10,10,.9);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-size: .88rem;
+  opacity: 0;
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+  z-index: 999;
+  border: 1px solid rgba(255,255,255,.2);
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Rules Modal ────────────────────────────────────────────── */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.82);
+  z-index: 500;
+  overflow-y: auto;
+  padding: 20px;
+  align-items: flex-start;
+  justify-content: center;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: linear-gradient(160deg, #1a3028 0%, #0f2018 100%);
+  border: 2px solid rgba(212,175,55,.7);
+  border-radius: 12px;
+  padding: 22px 24px;
+  max-width: 460px;
+  width: 100%;
+  margin: auto;
+  box-shadow: 0 0 50px rgba(0,0,0,.7), 0 0 20px rgba(212,175,55,.08);
+}
+.modal h2 {
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 14px;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+.modal h3 {
+  color: #8fd;
+  font-size: .88rem;
+  margin: 12px 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  padding-bottom: 4px;
+}
+.modal ul { padding-left: 18px; }
+.modal li {
+  font-size: .82rem;
+  color: #bbb;
+  line-height: 1.75;
+}
+.modal li b { color: #fff; }
+.modal-close {
+  display: block;
+  margin: 18px auto 0;
+  padding: 10px 34px;
+  background: var(--gold);
+  color: #111;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: .9rem;
+  transition: opacity .15s;
+}
+.modal-close:hover { opacity: .85; }
+
+/* ── Win Flash Animation ────────────────────────────────────── */
+@keyframes win-flash {
+  0%, 100% { filter: brightness(1); }
+  50%       { filter: brightness(2.6) drop-shadow(0 0 10px #fff); }
+}
+.nc.flashing { animation: win-flash .5s ease 3; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 400px) {
+  header h1 { font-size: .95rem; letter-spacing: 2px; }
+  .chip { width: 40px; height: 46px; font-size: .62rem; }
+  .btn-spin { padding: 12px 36px; font-size: .95rem; }
+  .ob { height: 38px; font-size: .66rem; }
+}
+
+/* ── Wheel (responsive) ─────────────────────────────────────── */
+#wheel-canvas {
+  width: min(375px, calc(100vw - 24px));
+  height: min(375px, calc(100vw - 24px));
+}
+
+/* ── 2:1 inline column bet ──────────────────────────────────── */
+.nc-2to1 {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--felt);
+  border: 2px solid var(--gold);
+  border-radius: 3px;
+  font-size: .65rem;
+  font-weight: bold;
+  color: var(--gold);
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0;
+  transition: background .12s;
+}
+.nc-2to1:hover    { background: rgba(255,200,50,.3); }
+.nc-2to1.has-bet  { box-shadow: inset 0 0 8px 2px var(--gold); }
+
+/* ── History popup button ───────────────────────────────────── */
+.hist-open-btn {
+  padding: 5px 18px;
+  background: transparent;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: .76rem;
+  transition: background .15s, color .15s;
+}
+.hist-open-btn:hover { background: var(--gold); color: #111; }
+
+/* ── History baccarat-style grid ────────────────────────────── */
+.hist-grid {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 4px;
+  overflow-x: auto;
+}
+.hist-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  min-width: 36px;
+}
+.h-ball-lg {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.h-ball-lg.color-red   { background: var(--red); }
+.h-ball-lg.color-black { background: #111; border: 1px solid #444; }
+.h-ball-lg.color-green { background: var(--green); }
+.hist-empty {
+  color: #556;
+  font-size: .85rem;
+  padding: 24px;
+  text-align: center;
+}
+.hist-legend {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  padding: 4px 0 6px;
+  font-size: .78rem;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<header>
+  <a href="casino.html" class="hdr-btn">← TOP</a>
+  <h1>European Roulette</h1>
+  <button class="hdr-btn" id="btn-rules">ルール</button>
+</header>
+
+<!-- ── Stats Bar ───────────────────────────────────────────── -->
+<div class="stats-bar">
+  <span>スピン: <b id="stat-spins">0</b></span>
+  <span>勝率: <b id="stat-winrate">0%</b></span>
+  <span>連勝: <b id="stat-streak">0</b></span>
+  <span>最高連勝: <b id="stat-best">0</b></span>
+</div>
+
+<!-- ── Balance / Bet ───────────────────────────────────────── -->
+<div class="info-bar">
+  <div class="item">
+    <div class="label">残高</div>
+    <div class="value" id="balance">0</div>
+  </div>
+  <div class="item">
+    <div class="label">ベット中</div>
+    <div class="value bet-val" id="bet-amount">0</div>
+  </div>
+</div>
+
+<!-- ── Chip Selector ───────────────────────────────────────── -->
+<div class="chips-row">
+  <div class="chip c1"        data-v="1"   title="1チップ">1</div>
+  <div class="chip c10  sel" data-v="10"  title="10チップ">10</div>
+  <div class="chip c25"      data-v="25"  title="25チップ">25</div>
+  <div class="chip c50"      data-v="50"  title="50チップ">50</div>
+  <div class="chip c100"     data-v="100" title="100チップ">100</div>
+  <div class="chip c500"     data-v="500" title="500チップ">500</div>
+  <div class="chip c1k"      data-v="1000" title="1000チップ">1K</div>
+</div>
+
+<!-- ── Wheel ───────────────────────────────────────────────── -->
+<div class="wheel-wrap">
+  <canvas id="wheel-canvas" width="375" height="375"></canvas>
+</div>
+
+<!-- ── Result ──────────────────────────────────────────────── -->
+<div class="result-area" id="result-area">
+  <div style="color:#778;font-size:.85rem">ベットを置いてSPINしてください</div>
+</div>
+
+<!-- ── Number History ──────────────────────────────────────── -->
+<div class="history-row" id="history-row"></div>
+
+<!-- ── History Popup Button ────────────────────────────────── -->
+<div style="display:flex;justify-content:center;padding:4px 0 10px">
+  <button class="hist-open-btn" id="btn-hist">📊 出目履歴</button>
+</div>
+
+<!-- ── Betting Table ───────────────────────────────────────── -->
+<div class="table-wrap">
+  <div class="betting-table">
+    <div id="num-grid"></div>
+    <div id="ob-section" class="ob-section"></div>
+  </div>
+</div>
+
+<!-- ── Controls ────────────────────────────────────────────── -->
+<div class="controls">
+  <button class="btn-clear" id="btn-clear" disabled>クリア</button>
+  <button class="btn-spin"  id="btn-spin">SPIN</button>
+</div>
+
+<!-- ── Toast ───────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── Rules Modal ─────────────────────────────────────────── -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2>ルール &amp; ベット説明</h2>
+
+    <h3>インサイドベット</h3>
+    <ul>
+      <li><b>ストレートアップ (×36)</b> — 数字の中央をクリック</li>
+      <li><b>スプリット (×18)</b> — 2数字の境界をクリック</li>
+      <li><b>ストリート (×12)</b> — 右端「3」ゾーンをクリック</li>
+      <li><b>コーナー (×9)</b> — 4数字の交差点をクリック</li>
+      <li><b>シックスライン (×6)</b> — 「6」ゾーンをクリック</li>
+    </ul>
+
+    <h3>アウトサイドベット</h3>
+    <ul>
+      <li><b>レッド / ブラック (×2)</b> — 色に賭ける</li>
+      <li><b>オッド / イーブン (×2)</b> — 奇数・偶数に賭ける</li>
+      <li><b>ロー / ハイ (×2)</b> — 1–18 / 19–36 に賭ける</li>
+      <li><b>ダズン (×3)</b> — 1–12 / 13–24 / 25–36</li>
+      <li><b>カラム (×3)</b> — 縦列全体に賭ける</li>
+    </ul>
+
+    <h3>注意事項</h3>
+    <ul>
+      <li>0 が出た場合、全アウトサイドベットは没収されます</li>
+      <li>チップ残高は localStorage の <code style="color:var(--gold)">casinoChips</code> キーで共有されます</li>
+      <li>残高 0 のとき初期チップ 1000 が付与されます</li>
+    </ul>
+
+    <button class="modal-close" id="btn-close-modal">閉じる</button>
+  </div>
+</div>
+
+<!-- ── History Popup ────────────────────────────────────────── -->
+<div class="modal-bg" id="hist-modal">
+  <div class="modal" style="max-width:420px">
+    <h2>出目履歴（直近20回）</h2>
+    <div id="hist-grid" class="hist-grid"></div>
+    <div class="hist-legend">
+      <span style="color:#e74c3c">● 赤</span>
+      <span style="color:#888">● 黒</span>
+      <span style="color:#27ae60">● 緑 (0)</span>
+      <span style="color:#aaa">左が最新</span>
+    </div>
+    <button class="modal-close" id="btn-close-hist">閉じる</button>
+  </div>
+</div>
+
+<!-- ── JavaScript (後半) ────────────────────────────────────── -->
+<script>
+'use strict';
+
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const WHL  = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const REDS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+const SEG  = Math.PI * 2 / 37;
+
+// ── TABLE GEOMETRY  (horizontal layout) ──────────────────────────────────────
+// Columns (left→right): [0] | gap | [1..3] | gap | [4..6] | … | [34..36] | gap | [2:1]
+const CW=44, CH=44, G=5, SW=26;
+// GW = zero(44)+gap(5)+12cols×(44+5)+2:1col(44) = 681
+const GW     = CW + G + 12*(CW+G) + CW;       // 681
+// Street zones start just after the 3 number rows
+const SY     = 3*(CH+G);                        // 147  (row-end + 1 gap)
+const GH     = SY + SW;                         // 173
+// x-start of the 2:1 column-bet buttons
+const COL_X  = CW + G + 12*(CW+G);             // 637
+
+// Payout multipliers (return total including stake)
+const MULT = {
+  straight:36, split:18, street:12, corner:9, sixline:6,
+  dozen:3, column:3, red:2, black:2, odd:2, even:2, low:2, high:2
+};
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let chips    = parseInt(localStorage.getItem('casinoChips')) || 1000;
+let selV     = 10;
+let bets     = {};      // key → { type, nums, amount, cx, cy }
+let spinning = false;
+let stats    = JSON.parse(localStorage.getItem('rlStats') || '{"n":0,"w":0,"s":0,"b":0}');
+let hist     = JSON.parse(localStorage.getItem('rlHist')  || '[]');
+
+// ── SMALL HELPERS ────────────────────────────────────────────────────────────
+const numC     = n => n===0 ? 'green' : REDS.has(n) ? 'red' : 'black';
+const numHex   = c => c==='red' ? '#c0392b' : c==='black' ? '#1a1a1a' : '#156a35';
+const rng      = (a,b,s=1) => { const r=[]; for(let i=a;i<=b;i+=s) r.push(i); return r; };
+const bkey     = (type,nums) => type+'_'+[...nums].sort((a,b)=>a-b).join('_');
+const fmt      = n => n>=1000 ? (n/1000).toFixed(n%1000===0?0:1)+'K' : ''+n;
+const totalBet = () => Object.values(bets).reduce((s,b)=>s+b.amount, 0);
+
+// Number at (row, col) in horizontal grid
+// row: 0=top(3,6,…,36)  1=mid(2,5,…,35)  2=bot(1,4,…,34)
+// col: 0–11
+const numAt = (row, col) => 3*col + 3 - row;
+
+// Cell top-left position in horizontal grid
+function cp(n) {
+  if (n===0) return { x:0, y:0, w:CW, h:3*CH+2*G };   // zero spans full height
+  const col = Math.floor((n-1)/3);
+  const row = 2 - (n-1)%3;                              // 0=top … 2=bot
+  return { x: CW+G + col*(CW+G), y: row*(CH+G), w:CW, h:CH };
+}
+
+// Persist
+const saveChips = () => localStorage.setItem('casinoChips', chips);
+const saveStats = () => localStorage.setItem('rlStats', JSON.stringify(stats));
+const saveHist  = () => localStorage.setItem('rlHist',  JSON.stringify(hist.slice(0,20)));
+
+// ── CANVAS / WHEEL ───────────────────────────────────────────────────────────
+const cv  = document.getElementById('wheel-canvas');
+const ctx = cv.getContext('2d');
+const W=375, H=375, R=172, CX=W/2, CY=H/2;   // 1.5× bigger
+
+let wA=0,  bA=0,  bRad=0;
+let phase     = 'idle'; // 'idle' | 'spin' | 'settle'
+let spinStart = 0, spinDur = 0;
+let startWA=0, deltaWA=0, startBA=0, deltaBA=0;
+let resIdx = 0;
+
+function drawWheel() {
+  ctx.clearRect(0,0,W,H);
+
+  // ── Outer ambient glow ────────────────────────────────────────
+  const outerGlow = ctx.createRadialGradient(CX,CY,R+5, CX,CY,R+24);
+  outerGlow.addColorStop(0,'rgba(0,0,0,.6)');
+  outerGlow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(CX,CY,R+24,0,Math.PI*2);
+  ctx.fillStyle=outerGlow; ctx.fill();
+
+  // ── Multi-layer rim ───────────────────────────────────────────
+  ctx.beginPath(); ctx.arc(CX,CY,R+20,0,Math.PI*2);
+  ctx.fillStyle='#231208'; ctx.fill();
+
+  // Gold band rim
+  const rimGrad = ctx.createLinearGradient(CX-R-18,CY, CX+R+18,CY);
+  rimGrad.addColorStop(0,   '#7a5510');
+  rimGrad.addColorStop(0.25,'#d4af37');
+  rimGrad.addColorStop(0.5, '#f5d878');
+  rimGrad.addColorStop(0.75,'#d4af37');
+  rimGrad.addColorStop(1,   '#7a5510');
+  ctx.beginPath(); ctx.arc(CX,CY,R+18,0,Math.PI*2);
+  ctx.fillStyle=rimGrad; ctx.fill();
+
+  // Dark wood band
+  ctx.beginPath(); ctx.arc(CX,CY,R+12,0,Math.PI*2);
+  ctx.fillStyle='#4a2e08'; ctx.fill();
+
+  // Inner gold ring lines
+  ctx.beginPath(); ctx.arc(CX,CY,R+10,0,Math.PI*2);
+  ctx.strokeStyle='rgba(212,175,55,.8)'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX,CY,R+6,0,Math.PI*2);
+  ctx.strokeStyle='rgba(212,175,55,.5)'; ctx.lineWidth=1; ctx.stroke();
+
+  // Segment edge shadow
+  ctx.beginPath(); ctx.arc(CX,CY,R+1,0,Math.PI*2);
+  ctx.strokeStyle='rgba(0,0,0,.65)'; ctx.lineWidth=3; ctx.stroke();
+
+  // ── 37 coloured segments ──────────────────────────────────────
+  for (let i=0; i<37; i++) {
+    const a0  = wA - Math.PI/2 + i*SEG;
+    const a1  = a0 + SEG;
+    const col = numC(WHL[i]);
+
+    const sg = ctx.createRadialGradient(CX,CY,R*0.2, CX,CY,R);
+    if (col==='red') {
+      sg.addColorStop(0,'#d94040'); sg.addColorStop(1,'#7a1415');
+    } else if (col==='black') {
+      sg.addColorStop(0,'#2c2c2c'); sg.addColorStop(1,'#040404');
+    } else {
+      sg.addColorStop(0,'#1e9a50'); sg.addColorStop(1,'#073d18');
+    }
+    ctx.beginPath(); ctx.moveTo(CX,CY);
+    ctx.arc(CX,CY,R,a0,a1); ctx.closePath();
+    ctx.fillStyle=sg; ctx.fill();
+    ctx.strokeStyle='rgba(212,175,55,.45)'; ctx.lineWidth=0.75; ctx.stroke();
+
+    // Number label with drop-shadow
+    const mid = a0 + SEG/2;
+    ctx.save();
+    ctx.translate(CX + Math.cos(mid)*R*0.77, CY + Math.sin(mid)*R*0.77);
+    ctx.rotate(mid + Math.PI/2);
+    ctx.font='bold 12px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(0,0,0,.55)';
+    ctx.fillText(WHL[i], 1, 1);
+    ctx.fillStyle='#fff';
+    ctx.fillText(WHL[i], 0, 0);
+    ctx.restore();
+  }
+
+  // ── Gold spoke lines at segment boundaries ────────────────────
+  for (let i=0; i<37; i++) {
+    const a = wA - Math.PI/2 + i*SEG;
+    ctx.beginPath();
+    ctx.moveTo(CX + Math.cos(a)*R*0.28, CY + Math.sin(a)*R*0.28);
+    ctx.lineTo(CX + Math.cos(a)*R,      CY + Math.sin(a)*R);
+    ctx.strokeStyle='rgba(212,175,55,.28)'; ctx.lineWidth=0.7;
+    ctx.stroke();
+  }
+
+  // ── Inner decorative ring ─────────────────────────────────────
+  ctx.beginPath(); ctx.arc(CX,CY,R*0.34,0,Math.PI*2);
+  ctx.strokeStyle='rgba(212,175,55,.5)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // ── Hub body ─────────────────────────────────────────────────
+  const hubGrad = ctx.createRadialGradient(CX-12,CY-12,2, CX,CY,R*0.3);
+  hubGrad.addColorStop(0,'#9a7040');
+  hubGrad.addColorStop(0.5,'#5a3820');
+  hubGrad.addColorStop(1,'#231208');
+  ctx.beginPath(); ctx.arc(CX,CY,R*0.3,0,Math.PI*2);
+  ctx.fillStyle=hubGrad; ctx.fill();
+  ctx.strokeStyle='#d4af37'; ctx.lineWidth=3; ctx.stroke();
+
+  // Hub spokes
+  for (let i=0; i<8; i++) {
+    const a = wA + i*Math.PI/4;
+    ctx.beginPath();
+    ctx.moveTo(CX + Math.cos(a)*R*0.05, CY + Math.sin(a)*R*0.05);
+    ctx.lineTo(CX + Math.cos(a)*R*0.27, CY + Math.sin(a)*R*0.27);
+    ctx.strokeStyle='rgba(212,175,55,.32)'; ctx.lineWidth=1.5;
+    ctx.stroke();
+  }
+
+  // ── Centre medallion ──────────────────────────────────────────
+  const medGrad = ctx.createRadialGradient(CX-4,CY-4,1, CX,CY,14);
+  medGrad.addColorStop(0,'#f8e070');
+  medGrad.addColorStop(0.45,'#d4af37');
+  medGrad.addColorStop(1,'#7a5510');
+  ctx.beginPath(); ctx.arc(CX,CY,14,0,Math.PI*2);
+  ctx.fillStyle=medGrad; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  ctx.beginPath(); ctx.arc(CX,CY,5,0,Math.PI*2);
+  ctx.fillStyle='#231208'; ctx.fill();
+}
+
+function drawBall() {
+  const bx = CX + Math.cos(bA)*bRad;
+  const by = CY + Math.sin(bA)*bRad;
+
+  // Drop shadow
+  ctx.beginPath(); ctx.arc(bx+2,by+3,9,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fill();
+
+  // Ball body gradient
+  const bg = ctx.createRadialGradient(bx-3,by-3,1, bx,by,9);
+  bg.addColorStop(0,'#ffffff');
+  bg.addColorStop(0.4,'#d8d8d8');
+  bg.addColorStop(1,'#888');
+  ctx.beginPath(); ctx.arc(bx,by,9,0,Math.PI*2);
+  ctx.fillStyle=bg; ctx.fill();
+  ctx.strokeStyle='rgba(150,150,150,.5)'; ctx.lineWidth=1; ctx.stroke();
+
+  // Specular highlight
+  ctx.beginPath(); ctx.arc(bx-3,by-3,3.5,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fill();
+}
+
+// Single animation loop — runs forever
+function animLoop(ts) {
+  if (phase === 'spin') {
+    const el = ts - spinStart;
+    const t  = Math.min(el / spinDur, 1);
+    const e  = 1 - Math.pow(1-t, 4);        // quartic ease-out
+
+    wA   = startWA + deltaWA * e;
+    bA   = startBA + deltaBA * (1 - Math.pow(1-t, 2.5));
+    bRad = R*0.94 + e * (R*0.62 - R*0.94);  // spiral inward
+
+    if (t >= 1) {
+      phase = 'settle';
+      wA   = startWA + deltaWA;   // lock to exact angle
+      bA   = -Math.PI / 2;        // ball sits at 12 o'clock
+      bRad = R * 0.62;
+      setTimeout(finishSpin, 700);
+    }
+  } else if (phase === 'idle') {
+    wA += 0.003;
+  }
+  // 'settle': hold current state until finishSpin fires
+
+  drawWheel();
+  if (phase !== 'idle') drawBall();
+  requestAnimationFrame(animLoop);
+}
+
+// ── START SPIN ───────────────────────────────────────────────────────────────
+function startSpin() {
+  if (spinning) return;
+  if (!Object.keys(bets).length) { toast('ベットを置いてください'); return; }
+  const tb = totalBet();
+  if (tb > chips) { toast('チップが足りません'); return; }
+
+  spinning = true;
+  phase    = 'spin';
+  document.getElementById('btn-spin').disabled  = true;
+  document.getElementById('btn-clear').disabled = true;
+
+  chips -= tb;
+  saveChips();
+  updateUI();
+
+  // Determine winning pocket
+  resIdx = Math.floor(Math.random() * 37);
+
+  // ── Wheel: end with WHL[resIdx] centred at the top ──────────────────
+  //   Segment i centre angle = wA - π/2 + i·SEG + SEG/2
+  //   Set to -π/2  →  wA = -(resIdx + 0.5)·SEG
+  const targetWA = -(resIdx + 0.5) * SEG;
+  let diff = ((targetWA - wA) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+  if (diff < 0.2) diff += Math.PI*2;                // guarantee forward spin
+  const N = 8 + Math.floor(Math.random() * 5);      // 8–12 extra full rotations
+  startWA  = wA;
+  deltaWA  = diff + N * Math.PI * 2;
+
+  // ── Ball: counter-clockwise, ends exactly at -π/2 ───────────────────
+  startBA = Math.random() * Math.PI * 2;
+  bA      = startBA;
+  bRad    = R * 0.94;
+  let bDiff = ((-Math.PI/2 - startBA) % (Math.PI*2) - Math.PI*2) % (Math.PI*2);
+  if (bDiff > -0.1) bDiff -= Math.PI * 2;           // keep negative (CCW)
+  const nBall = 12 + Math.floor(Math.random() * 4); // 12–15 rotations CCW
+  deltaBA = bDiff - nBall * Math.PI * 2;
+
+  spinStart = performance.now();
+  spinDur   = 4200 + Math.random() * 2200;
+}
+
+// ── FINISH SPIN ──────────────────────────────────────────────────────────────
+function finishSpin() {
+  const result = WHL[resIdx];
+  const tb     = totalBet();           // read before clearing
+  const win    = calcWin(result);
+  chips += win;
+  saveChips();
+
+  // Update stats
+  stats.n++;
+  if (win > 0) { stats.w++; stats.s++; stats.b = Math.max(stats.b, stats.s); }
+  else         { stats.s = 0; }
+  saveStats();
+
+  // Update history
+  hist.unshift(result);
+  saveHist();
+
+  // Show result
+  const c   = numC(result);
+  const net = win - tb;
+  document.getElementById('result-area').innerHTML =
+    `<div class="result-ball color-${c}">${result}</div>
+     <div class="result-msg ${net>=0?'win':'lose'}">
+       ${net>=0 ? '＋'+win+' chips 獲得！' : net+' chips...'}
+     </div>`;
+
+  // Flash the winning cell on the table
+  document.querySelectorAll('.nc').forEach(el => {
+    if (+el.dataset.n === result) {
+      el.classList.add('flashing');
+      setTimeout(() => el.classList.remove('flashing'), 1800);
+    }
+  });
+
+  // Reset state
+  bets = {};
+  renderChips();
+  updateUI();
+  spinning = false;
+  phase    = 'idle';
+  document.getElementById('btn-spin').disabled  = false;
+  document.getElementById('btn-clear').disabled = true;
+}
+
+// ── WIN CALCULATION ──────────────────────────────────────────────────────────
+function calcWin(result) {
+  return Object.values(bets).reduce((sum, b) =>
+    sum + (b.nums.includes(result) ? b.amount * (MULT[b.type] || 1) : 0), 0);
+}
+
+// ── PLACE BET ────────────────────────────────────────────────────────────────
+function placeBet(type, nums, cx, cy) {
+  if (spinning) return;
+  if (selV + totalBet() > chips) { toast('チップが足りません'); return; }
+  const k = bkey(type, nums);
+  if (bets[k]) bets[k].amount += selV;
+  else         bets[k] = { type, nums, amount: selV, cx, cy };
+  renderChips();
+  updateBetAmt();
+  updateChipAvailability();
+  document.getElementById('btn-clear').disabled = false;
+}
+
+// ── RENDER CHIP OVERLAYS ─────────────────────────────────────────────────────
+function renderChips() {
+  const grid = document.getElementById('num-grid');
+
+  // Clear old overlays
+  grid.querySelectorAll('.chip-ovl').forEach(e => e.remove());
+
+  // Inside-bet overlays (positioned by px coords)
+  for (const k in bets) {
+    const b = bets[k];
+    if (b.cx === null) continue;
+    const d = document.createElement('div');
+    d.className   = 'chip-ovl';
+    d.style.left  = b.cx + 'px';
+    d.style.top   = b.cy + 'px';
+    d.textContent = fmt(b.amount);
+    grid.appendChild(d);
+  }
+
+  // Outside-bet cells
+  document.querySelectorAll('.ob').forEach(el => {
+    el.querySelector('.ob-chip')?.remove();
+    el.classList.remove('has-bet');
+    const k = el.dataset.k;
+    if (bets[k]) {
+      el.classList.add('has-bet');
+      const chip = document.createElement('div');
+      chip.className   = 'ob-chip';
+      chip.textContent = fmt(bets[k].amount);
+      el.appendChild(chip);
+    }
+  });
+
+  // 2:1 inline column buttons
+  document.querySelectorAll('.nc-2to1').forEach(el => {
+    el.classList.toggle('has-bet', !!(el.dataset.k && bets[el.dataset.k]));
+  });
+}
+
+// ── CHIP AVAILABILITY ────────────────────────────────────────────────────────
+function updateChipAvailability() {
+  const cur   = totalBet();
+  let selOk   = false;
+  let fallback = null;
+  document.querySelectorAll('.chip').forEach(chip => {
+    const v  = +chip.dataset.v;
+    const ok = (v + cur) <= chips;
+    chip.classList.toggle('unavail', !ok);
+    if (ok) {
+      if (!fallback) fallback = chip;
+      if (v === selV) selOk = true;
+    }
+  });
+  if (!selOk && fallback) {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+    fallback.classList.add('sel');
+    selV = +fallback.dataset.v;
+  }
+}
+
+// ── BUILD NUMBER GRID  (horizontal layout) ───────────────────────────────────
+// Layout:
+//   row 0 (top): 3  6  9 … 36
+//   row 1 (mid): 2  5  8 … 35   [2:1]
+//   row 2 (bot): 1  4  7 … 34
+//   street-zone: ▼  ▼  ▼ … ▼  (one per number-column)
+function buildTable() {
+  const grid = document.getElementById('num-grid');
+  grid.style.width  = GW + 'px';
+  grid.style.height = GH + 'px';
+
+  function place(el, x, y, w, h) {
+    el.style.cssText += `;left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
+    grid.appendChild(el);
+  }
+
+  // Number cells 0–36
+  for (let n=0; n<=36; n++) {
+    const p  = cp(n);
+    const el = document.createElement('div');
+    el.className   = 'nc color-' + numC(n);
+    el.dataset.n   = n;
+    el.textContent = n;
+    const cx = p.x + p.w/2, cy = p.y + p.h/2;
+    el.addEventListener('click', () => placeBet('straight', [n], cx, cy));
+    place(el, p.x, p.y, p.w, p.h);
+  }
+
+  // Bet-zone factory
+  function bzone(type, nums, cx, cy, x, y, w, h, xc) {
+    const el = document.createElement('div');
+    el.className = 'bz' + (xc ? ' '+xc : '');
+    el.title = bzTitle(type, nums);
+    if (xc === 'street') el.textContent = '▼';
+    el.addEventListener('click', () => placeBet(type, nums, cx, cy));
+    place(el, x, y, w, h);
+  }
+
+  // ── Vertical splits: between adjacent cols, same row ────────────────────
+  for (let r=0; r<3; r++) for (let c=0; c<11; c++) {
+    const n1=numAt(r,c), n2=numAt(r,c+1);
+    const x = CW+G + c*(CW+G) + CW,  y = r*(CH+G);
+    bzone('split', [n1,n2],  x, y+CH/2,  x, y, G, CH);
+  }
+
+  // ── Horizontal splits: between adjacent rows, same col ──────────────────
+  for (let r=0; r<2; r++) for (let c=0; c<12; c++) {
+    const n1=numAt(r,c), n2=numAt(r+1,c);
+    const x = CW+G + c*(CW+G),  y = r*(CH+G) + CH;
+    bzone('split', [n1,n2],  x+CW/2, y,  x, y, CW, G);
+  }
+
+  // ── Corners: intersection of 4 adjacent cells ────────────────────────────
+  for (let r=0; r<2; r++) for (let c=0; c<11; c++) {
+    const n1=numAt(r,c), n2=numAt(r,c+1), n3=numAt(r+1,c), n4=numAt(r+1,c+1);
+    const x = CW+G + c*(CW+G) + CW,  y = r*(CH+G) + CH;
+    bzone('corner', [n1,n2,n3,n4],  x, y,  x, y, G, G);
+  }
+
+  // ── Streets: bottom of each number-column ───────────────────────────────
+  for (let c=0; c<12; c++) {
+    const ns = [numAt(0,c), numAt(1,c), numAt(2,c)];
+    const x  = CW+G + c*(CW+G);
+    bzone('street', ns,  x+CW/2, SY+SW/2,  x, SY, CW, SW,  'street');
+  }
+
+  // ── Six lines: between adjacent street zones ─────────────────────────────
+  for (let c=0; c<11; c++) {
+    const ns = [numAt(0,c),numAt(1,c),numAt(2,c), numAt(0,c+1),numAt(1,c+1),numAt(2,c+1)];
+    const x  = CW+G + c*(CW+G) + CW;
+    bzone('sixline', ns,  x, SY+SW/2,  x, SY, G, SW,  'sixline');
+  }
+
+  // ── 2:1 column-bet buttons (right side, one per row) ────────────────────
+  // row 0→[3,6,…,36]  row 1→[2,5,…,35]  row 2→[1,4,…,34]
+  for (let r=0; r<3; r++) {
+    const nums = rng(3-r, 36-r, 3);
+    const el   = document.createElement('div');
+    el.className   = 'nc-2to1';
+    el.textContent = '2:1';
+    el.title       = bzTitle('column', nums);
+    el.dataset.k   = bkey('column', nums);
+    const y = r*(CH+G);
+    el.addEventListener('click', () => placeBet('column', nums, COL_X+CW/2, y+CH/2));
+    place(el, COL_X, y, CW, CH);
+  }
+
+  buildOutside();
+}
+
+// Tooltip text for bet zones
+function bzTitle(type, nums) {
+  const N = { straight:'ストレートアップ(×36)', split:'スプリット(×18)',
+              street:'ストリート(×12)',         corner:'コーナー(×9)',
+              sixline:'シックスライン(×6)',     dozen:'ダズン(×3)',
+              column:'カラム(×3)',              red:'レッド(×2)',
+              black:'ブラック(×2)',             odd:'オッド(×2)',
+              even:'イーブン(×2)',              low:'ロー(×2)', high:'ハイ(×2)' };
+  return (N[type]||type) + ': [' + nums.join(',') + ']';
+}
+
+// ── OUTSIDE BETS (horizontal — aligned under number zone) ────────────────────
+function buildOutside() {
+  const sec = document.getElementById('ob-section');
+  sec.innerHTML = '';
+  // Align with the 12 number columns (skip zero on left)
+  sec.style.width      = (12*(CW+G) - G) + 'px';   // 583px
+  sec.style.marginLeft = (CW+G) + 'px';             // 49px
+
+  function makeOB(label, type, nums, xClass) {
+    const el  = document.createElement('div');
+    const key = bkey(type, nums);
+    el.className   = 'ob' + (xClass ? ' '+xClass : '');
+    el.textContent = label;
+    el.title       = bzTitle(type, nums);
+    el.dataset.k   = key;
+    el.addEventListener('click', () => {
+      if (spinning) return;
+      if (selV + totalBet() > chips) { toast('チップが足りません'); return; }
+      if (bets[key]) bets[key].amount += selV;
+      else           bets[key] = { type, nums, amount: selV, cx: null, cy: null };
+      renderChips(); updateBetAmt();
+      document.getElementById('btn-clear').disabled = false;
+    });
+    return el;
+  }
+
+  function row(...cells) {
+    const div = document.createElement('div');
+    div.className = 'ob-row';
+    cells.forEach(c => div.appendChild(c));
+    sec.appendChild(div);
+  }
+
+  // Dozens — span full 583px (3 equal cells)
+  row(
+    makeOB('1st 12', 'dozen', rng(1,12)),
+    makeOB('2nd 12', 'dozen', rng(13,24)),
+    makeOB('3rd 12', 'dozen', rng(25,36))
+  );
+
+  // Even-chance — 6 equal cells
+  const blacks = rng(1,36).filter(n => !REDS.has(n));
+  row(
+    makeOB('1-18',  'low',   rng(1,18)),
+    makeOB('Even',  'even',  rng(2,36,2)),
+    makeOB('●',     'red',   [...REDS],  'ob-red'),
+    makeOB('●',     'black', blacks,     'ob-black'),
+    makeOB('Odd',   'odd',   rng(1,35,2)),
+    makeOB('19-36', 'high',  rng(19,36))
+  );
+  // Note: column (2:1) bets are inline in the grid as buttons on the right
+}
+
+// ── UI UPDATES ───────────────────────────────────────────────────────────────
+function updateUI() {
+  document.getElementById('balance').textContent = chips.toLocaleString();
+  updateBetAmt();
+  updateStats();
+  updateHist();
+  updateChipAvailability();
+}
+
+function updateBetAmt() {
+  document.getElementById('bet-amount').textContent = totalBet().toLocaleString();
+}
+
+function updateStats() {
+  const {n, w, s, b} = stats;
+  document.getElementById('stat-spins').textContent   = n;
+  document.getElementById('stat-winrate').textContent = n ? Math.round(w/n*100)+'%' : '0%';
+  document.getElementById('stat-streak').textContent  = s;
+  document.getElementById('stat-best').textContent    = b;
+}
+
+function updateHist() {
+  const row = document.getElementById('history-row');
+  row.innerHTML = '';
+  hist.slice(0,15).forEach(n => {
+    const d = document.createElement('div');
+    d.className   = 'h-ball color-' + numC(n);
+    d.textContent = n;
+    row.appendChild(d);
+  });
+}
+
+// ── HISTORY GRID (baccarat-style scoreboard) ─────────────────────────────────
+// Columns of 5 balls each, newest result at top-left
+function buildHistGrid() {
+  const grid = document.getElementById('hist-grid');
+  grid.innerHTML = '';
+  if (!hist.length) {
+    grid.innerHTML = '<div class="hist-empty">まだスピン履歴がありません</div>';
+    return;
+  }
+  const ROWS    = 5;
+  const display = hist.slice(0, 20);
+  const numCols = Math.ceil(display.length / ROWS);
+  for (let c=0; c<numCols; c++) {
+    const col = document.createElement('div');
+    col.className = 'hist-col';
+    for (let r=0; r<ROWS; r++) {
+      const idx = c*ROWS + r;
+      if (idx >= display.length) break;
+      const n = display[idx];
+      const d = document.createElement('div');
+      d.className   = 'h-ball-lg color-' + numC(n);
+      d.textContent = n;
+      col.appendChild(d);
+    }
+    grid.appendChild(col);
+  }
+}
+
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function init() {
+  updateUI();
+  buildTable();
+  requestAnimationFrame(animLoop);   // start the single render loop
+
+  // Chip selector
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+      c.classList.add('sel');
+      selV = +c.dataset.v;
+    });
+  });
+
+  // Spin button
+  document.getElementById('btn-spin').addEventListener('click', startSpin);
+
+  // Clear button
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    if (spinning) return;
+    bets = {};
+    renderChips();
+    updateBetAmt();
+    updateChipAvailability();
+    document.getElementById('btn-clear').disabled = true;
+  });
+
+  // Rules modal
+  const modBg = document.getElementById('modal-bg');
+  document.getElementById('btn-rules').addEventListener('click', () =>
+    modBg.classList.add('open'));
+  document.getElementById('btn-close-modal').addEventListener('click', () =>
+    modBg.classList.remove('open'));
+  modBg.addEventListener('click', e => {
+    if (e.target === modBg) modBg.classList.remove('open');
+  });
+
+  // History popup
+  const histMod = document.getElementById('hist-modal');
+  document.getElementById('btn-hist').addEventListener('click', () => {
+    buildHistGrid();
+    histMod.classList.add('open');
+  });
+  document.getElementById('btn-close-hist').addEventListener('click', () =>
+    histMod.classList.remove('open'));
+  histMod.addEventListener('click', e => {
+    if (e.target === histMod) histMod.classList.remove('open');
+  });
+
+  // Chip sync across tabs
+  window.addEventListener('storage', e => {
+    if (e.key === 'casinoChips') {
+      chips = parseInt(e.newValue) || chips;
+      updateUI();
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
